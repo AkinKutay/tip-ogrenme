@@ -1,12 +1,42 @@
 <!doctype html>
 <html lang="tr">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Tıp Öğrenme</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tıp Öğrenme</title>
+<link rel="stylesheet" href="style.css">
 </head>
-<body style="font-family:sans-serif;padding:2rem">
-  <h1>Çalışıyor ✅</h1>
-  <p>Bu bir test sayfasıdır.</p>
+<body>
+<main>
+  <h1>Ne çalışacaksın?</h1>
+  <p class="uyari">Konu listesi örnektir; doğrulanmış tıbbi içerik değildir.</p>
+
+  <input id="ara" type="search" placeholder="Konu ara…" aria-label="Konu ara">
+  <div id="aramaSonuc" class="chips"></div>
+
+  <h2>Staj</h2>
+  <div id="staj" class="chips"></div>
+
+  <section id="altdalBolum" hidden>
+    <h2>Alt dal</h2>
+    <div id="altdal" class="chips"></div>
+  </section>
+
+  <section id="konuBolum" hidden>
+    <h2>Konu <small>(isteğe bağlı)</small></h2>
+    <div id="konu" class="chips"></div>
+  </section>
+
+  <h2>Çalışma modu</h2>
+  <div id="mod" class="cards"></div>
+
+  <h2>Süre <small>(isteğe bağlı)</small></h2>
+  <div id="sure" class="chips"></div>
+
+  <button id="basla" type="button" disabled>Çalışmayı başlat</button>
+  <p id="sonuc" role="status"></p>
+</main>
+<script src="data.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
