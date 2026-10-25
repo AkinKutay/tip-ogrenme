@@ -18,6 +18,13 @@ function dugme(sinif, metin, aciklama, secili, tikla) {
 
 const sec = (alan, deger) => { durum[alan] = durum[alan] === deger ? null : deger; };
 
+function ilerlemeYaz() {
+  const o = Depo.ozet();
+  $("ilerlemeOzet").textContent = o.cozulen
+    ? "İlerleme: " + o.cozulen + " soru çözüldü · " + o.tekrar + " soru tekrar bekliyor."
+    : "Henüz soru çözmedin.";
+}
+
 function render() {
   const staj = VERI.stajlar.find(s => s.id === durum.staj);
   const altdal = staj && staj.altDallar.find(a => a.id === durum.altdal);
@@ -43,8 +50,9 @@ function render() {
   $("sure").replaceChildren(...VERI.sureler.map(d =>
     dugme("chip", d + " dk", "", d === durum.sure, () => { sec("sure", d); render(); })));
 
-  $("basla").disabled = !(staj && durum.mod);
+  $("basla").disabled = !(durum.mod && (durum.mod === "yanlis" || staj));
   $("sonuc").textContent = "";
+  ilerlemeYaz();
 }
 
 $("ara").addEventListener("input", () => {
@@ -67,21 +75,26 @@ $("ara").addEventListener("input", () => {
 });
 
 $("basla").addEventListener("click", () => {
+  const mod = VERI.modlar.find(m => m.id === durum.mod);
+  if (mod.id === "yanlis") {
+    Calisma.tekrar(window.ICERIK || {}, render);
+    return;
+  }
+
   const staj = VERI.stajlar.find(s => s.id === durum.staj);
   const altdal = staj.altDallar.find(a => a.id === durum.altdal);
   const konu = altdal && altdal.konular.find(k => k.id === durum.konu);
-  const mod = VERI.modlar.find(m => m.id === durum.mod);
 
   const icerik = konu && window.ICERIK && window.ICERIK[konu.id];
   if (icerik && (mod.id === "ogren" || mod.id === "test")) {
-    Calisma.ac(icerik, mod.id, () => { $("sonuc").textContent = ""; });
+    Calisma.ac(icerik, mod.id, render);
     return;
   }
 
   let not;
   if (!konu) not = " Çalışmak için bir konu seç.";
   else if (!icerik) not = " Bu konu için örnek içerik henüz yok. Şu an yalnızca Genel Cerrahi › Akut batın › Akut apandisit hazır.";
-  else not = " Bu mod için ekran henüz yok; şu an yalnızca 'Konu öğrenme' ve 'Çoktan seçmeli soru' çalışıyor.";
+  else not = " Bu mod için ekran henüz yok; şu an 'Konu öğrenme', 'Çoktan seçmeli soru' ve 'Yanlışlarım ve eksiklerim' çalışıyor.";
 
   $("sonuc").textContent =
     "Seçimin: " + staj.ad + " › " + (altdal ? altdal.ad : "tüm alt dallar") +
@@ -89,4 +102,29 @@ $("basla").addEventListener("click", () => {
     (durum.sure ? durum.sure + " dk" : "süresiz") + "." + not;
 });
 
+$("sifirla").addEventListener("click", () => {
+  if (!confirm("Tüm ilerleme (çözülen sorular ve tekrar listesi) silinsin mi? Bu geri alınamaz.")) return;
+  Depo.sifirla();
+  render();
+});
+
+// Çevrimdışı kullanım durumu
+let cevrimdisiHazir = false;
+function cevrimdisiYaz() {
+  const e = $("cevrimdisi");
+  if (!("serviceWorker" in navigator)) { e.textContent = "Bu tarayıcı çevrimdışı kullanımı desteklemiyor."; return; }
+  if (!cevrimdisiHazir) { e.textContent = "Çevrimdışı kullanım hazırlanıyor…"; return; }
+  e.textContent = "Çevrimdışı kullanıma hazır ✓" + (navigator.onLine ? "" : " · şu an çevrimdışısın");
+}
+
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("./sw.js")
+    .then(() => navigator.serviceWorker.ready)
+    .then(() => { cevrimdisiHazir = true; cevrimdisiYaz(); })
+    .catch(() => { $("cevrimdisi").textContent = "Çevrimdışı mod kurulamadı; internet varken normal çalışır."; });
+}
+window.addEventListener("online", cevrimdisiYaz);
+window.addEventListener("offline", cevrimdisiYaz);
+
 render();
+cevrimdisiYaz();

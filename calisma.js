@@ -1,8 +1,9 @@
-// Çalışma ekranı: konu anlatımı ve çoktan seçmeli soru akışı.
+// Çalışma ekranı: konu anlatımı, çoktan seçmeli soru akışı ve tekrar modu.
 const Calisma = (() => {
   let icerik = null;
   let donus = null;
   let oturum = null;
+  let tekrarModu = false;
 
   const kok = () => document.getElementById("calisma");
   const anaEkran = () => document.getElementById("anaEkran");
@@ -53,9 +54,37 @@ const Calisma = (() => {
   function ac(yeniIcerik, mod, donusFonksiyonu) {
     icerik = yeniIcerik;
     donus = donusFonksiyonu;
+    tekrarModu = false;
     anaEkran().hidden = true;
     kok().hidden = false;
     if (mod === "ogren") dersEkrani(); else soruBaslat();
+  }
+
+  function tekrarAc(tumIcerikler, donusFonksiyonu) {
+    donus = donusFonksiyonu;
+    anaEkran().hidden = true;
+    kok().hidden = false;
+    const gruplar = Object.values(tumIcerikler || {})
+      .map(ic => ({ ic, n: Depo.tekrarlar(ic.id).length }))
+      .filter(g => g.n > 0);
+    const geri = dugme("geri", "← Ana ekran", kapat);
+    const baslik = el("h1", "", "Yanlışlarım ve eksiklerim");
+    if (!gruplar.length) {
+      goster([geri, baslik, el("p", "", "Tekrar bekleyen soru yok. Soru çözdükçe yanlışların ve emin olmadığın doğrular burada toplanır.")]);
+      return;
+    }
+    if (gruplar.length === 1) { tekrarSorulariBaslat(gruplar[0].ic); return; }
+    goster([geri, baslik, el("p", "", "Hangi konuyu tekrar etmek istersin?"),
+      ...gruplar.map(g => dugme("ana-dugme ikincil", g.ic.baslik + " (" + g.n + " soru)", () => tekrarSorulariBaslat(g.ic)))]);
+  }
+
+  function tekrarSorulariBaslat(ic) {
+    icerik = ic;
+    tekrarModu = true;
+    const sira = o => (o.sonSonuc === "yanlis" ? 0 : 1);
+    const kayitlar = Depo.tekrarlar(ic.id).filter(o => soruBul(o.soruId)).sort((a, b) => sira(a) - sira(b));
+    oturum = { kuyruk: kayitlar.map(o => o.soruId), i: 0, sonuclar: [], kayitHatasi: false };
+    soruGoster();
   }
 
   function kapat() {
@@ -83,7 +112,8 @@ const Calisma = (() => {
   function soruBaslat() {
     const varyantlar = icerik.sorular.map(s => s.varyant).filter(Boolean);
     const anaSorular = icerik.sorular.filter(s => !varyantlar.includes(s.id));
-    oturum = { kuyruk: anaSorular.map(s => s.id), i: 0, sonuclar: [] };
+    tekrarModu = false;
+    oturum = { kuyruk: anaSorular.map(s => s.id), i: 0, sonuclar: [], kayitHatasi: false };
     soruGoster();
   }
 
@@ -128,6 +158,10 @@ const Calisma = (() => {
       const dogruMu = secilen === s.dogru;
       const emin = !kutucuk.checked;
       oturum.sonuclar.push({ id: s.id, secilen, dogru: dogruMu, emin });
+      const sonucKodu = !dogruMu ? "yanlis" : (emin ? "dogru" : "dogru-emin-degil");
+      const listedeydi = Depo.tekrarlar(icerik.id).some(o => o.soruId === s.id);
+      const kayitTamam = Depo.kaydet(icerik.id, s.id, sonucKodu);
+      if (!kayitTamam) oturum.kayitHatasi = true;
 
       for (const x of secenekDugmeleri) {
         x.b.disabled = true;
@@ -167,8 +201,12 @@ const Calisma = (() => {
 
       gb.appendChild(kaynakKutusu(s.kaynakIds));
 
-      if (!dogruMu || !emin) {
-        gb.appendChild(el("p", "not", "Bu bilgi bu oturumun tekrar listesine eklendi. Kalıcı kayıt 4. aşamada eklenecek."));
+      if (!kayitTamam) {
+        gb.appendChild(el("p", "not", "Bu tarayıcıda ilerleme kaydedilemedi (gizli sekme veya depolama kapalı olabilir)."));
+      } else if (sonucKodu !== "dogru") {
+        gb.appendChild(el("p", "not", "Bu soru tekrar listene eklendi. Ana ekrandan 'Yanlışlarım ve eksiklerim' ile çalışabilirsin."));
+      } else if (listedeydi) {
+        gb.appendChild(el("p", "not", "Emin olarak doğru bildin; bu soru tekrar listesinden çıkarıldı."));
       }
       if (!dogruMu && s.varyant && !oturum.kuyruk.includes(s.varyant)) {
         oturum.kuyruk.splice(oturum.i + 1, 0, s.varyant);
@@ -203,12 +241,18 @@ const Calisma = (() => {
       }
       parcalar.push(ul);
     }
-    parcalar.push(el("p", "not", "Bu kayıtlar sayfa kapanınca silinir. Kalıcı ilerleme kaydı 4. aşamada eklenecek."));
-    parcalar.push(dugme("ana-dugme", "Soruları yeniden çöz", soruBaslat));
+    parcalar.push(el("p", "not", oturum.kayitHatasi
+      ? "İlerleme bu tarayıcıda kaydedilemedi."
+      : "İlerlemen bu cihazın tarayıcısına kaydedildi."));
+    if (tekrarModu) {
+      if (Depo.tekrarlar(icerik.id).length) parcalar.push(dugme("ana-dugme", "Kalan tekrarları çöz", () => tekrarSorulariBaslat(icerik)));
+    } else {
+      parcalar.push(dugme("ana-dugme", "Soruları yeniden çöz", soruBaslat));
+    }
     parcalar.push(dugme("ana-dugme ikincil", "Konu anlatımını oku", dersEkrani));
     parcalar.push(dugme("ana-dugme ikincil", "Ana ekrana dön", kapat));
     goster(parcalar);
   }
 
-  return { ac };
+  return { ac, tekrar: tekrarAc };
 })();
