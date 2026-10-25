@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<main>
+<main id="anaEkran">
   <h1>Ne çalışacaksın?</h1>
   <p class="uyari">Konu listesi örnektir; doğrulanmış tıbbi içerik değildir.</p>
 
@@ -36,7 +36,12 @@
   <button id="basla" type="button" disabled>Çalışmayı başlat</button>
   <p id="sonuc" role="status"></p>
 </main>
+
+<main id="calisma" hidden></main>
+
 <script src="data.js"></script>
+<script src="icerik-apandisit.js"></script>
+<script src="calisma.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

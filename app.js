@@ -71,11 +71,22 @@ $("basla").addEventListener("click", () => {
   const altdal = staj.altDallar.find(a => a.id === durum.altdal);
   const konu = altdal && altdal.konular.find(k => k.id === durum.konu);
   const mod = VERI.modlar.find(m => m.id === durum.mod);
+
+  const icerik = konu && window.ICERIK && window.ICERIK[konu.id];
+  if (icerik && (mod.id === "ogren" || mod.id === "test")) {
+    Calisma.ac(icerik, mod.id, () => { $("sonuc").textContent = ""; });
+    return;
+  }
+
+  let not;
+  if (!konu) not = " Çalışmak için bir konu seç.";
+  else if (!icerik) not = " Bu konu için örnek içerik henüz yok. Şu an yalnızca Genel Cerrahi › Akut batın › Akut apandisit hazır.";
+  else not = " Bu mod için ekran henüz yok; şu an yalnızca 'Konu öğrenme' ve 'Çoktan seçmeli soru' çalışıyor.";
+
   $("sonuc").textContent =
     "Seçimin: " + staj.ad + " › " + (altdal ? altdal.ad : "tüm alt dallar") +
     " › " + (konu ? konu.ad : "tüm konular") + " · " + mod.ad + " · " +
-    (durum.sure ? durum.sure + " dk" : "süresiz") +
-    ". Çalışma ekranları sonraki aşamada eklenecek.";
+    (durum.sure ? durum.sure + " dk" : "süresiz") + "." + not;
 });
 
 render();

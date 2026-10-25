@@ -18,3 +18,34 @@ input{width:100%;padding:.8rem 1rem;font:inherit;border:1px solid var(--cizgi);b
 #basla:disabled{opacity:.4}
 #sonuc{margin-top:1rem}
 :focus-visible{outline:3px solid var(--vurgu);outline-offset:2px}
+/* 3. aşama */
+:root{--ok:#1a7f4b;--hata:#c62828;--ok-bg:#e6f4ec;--hata-bg:#fdeaea}
+@media (prefers-color-scheme:dark){:root{--ok:#58c98a;--hata:#ff7b7b;--ok-bg:#16301f;--hata-bg:#3a1c1c}}
+input[type="checkbox"]{width:1.4rem;height:1.4rem;padding:0;vertical-align:middle;accent-color:var(--vurgu)}
+.geri{font:inherit;background:none;border:0;color:var(--vurgu);padding:.6rem 0;min-height:44px;cursor:pointer}
+.kutu{background:var(--kart);border:1px solid var(--cizgi);border-left:4px solid #d9a400;border-radius:10px;padding:.7rem .9rem;font-size:.9rem;color:var(--fg)}
+.madde{padding-left:1.2rem;margin:.3rem 0}
+.madde li{margin:.35rem 0}
+.ozet{font-weight:600;margin-top:1.2rem}
+.ilerleme{color:var(--soluk);font-size:.9rem;margin:1rem 0 .2rem}
+.soru{font-size:1.1rem;font-weight:600;margin:.3rem 0 1rem}
+.secenekler{display:grid;gap:.5rem}
+.secenek{font:inherit;color:var(--fg);background:var(--kart);border:1px solid var(--cizgi);border-radius:12px;padding:.8rem 1rem;min-height:52px;text-align:left;cursor:pointer;width:100%}
+.secenek:disabled{color:var(--fg);cursor:default}
+.secenek.dogru{background:var(--ok-bg);border:2px solid var(--ok);color:var(--fg)}
+.secenek.yanlis{background:var(--hata-bg);border:2px solid var(--hata);color:var(--fg)}
+.secenek .isaret{display:block;font-size:.85rem;font-weight:600;margin-top:.2rem}
+.emin{display:block;margin:1rem 0 .5rem}
+.ana-dugme{display:block;width:100%;margin-top:1rem;padding:1rem;font:inherit;font-weight:600;border:0;border-radius:12px;background:var(--vurgu);color:var(--vurgu-yazi);min-height:52px;cursor:pointer}
+.ana-dugme:disabled{opacity:.4;cursor:default}
+.ana-dugme.ikincil{background:var(--kart);color:var(--fg);border:1px solid var(--cizgi)}
+.geri-bildirim{margin-top:1.2rem;padding:1rem;border-radius:12px;border:2px solid var(--cizgi)}
+.geri-bildirim.iyi{border-color:var(--ok)}
+.geri-bildirim.kotu{border-color:var(--hata)}
+.geri-bildirim h2{margin-top:0}
+.geri-bildirim h3{font-size:1rem;margin:1rem 0 .3rem}
+.geri-bildirim p{margin:.3rem 0}
+.kaynak{margin-top:.8rem;padding:.6rem .8rem;border:1px dashed var(--cizgi);border-radius:10px;font-size:.85rem;color:var(--soluk)}
+.kaynak p{margin:.2rem 0}
+.not{color:var(--soluk);font-size:.9rem}
+summary{cursor:pointer;font-weight:600;margin-top:1rem}
